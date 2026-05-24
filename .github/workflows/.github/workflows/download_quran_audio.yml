@@ -1,0 +1,65 @@
+name: Download Quran Per-Ayah Audio
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        reciter:
+          - ar.abdulsamad
+          - ar.husary
+          - ar.husary-2
+          - ar.abdurrahmaansudais
+          - ar.saoodshuraym
+          - ar.ahmedajamy
+          - ar.shaatree
+          - ar.hani-ar-rifai
+          - ar.mahermuaiqly
+          - ar.muhammadayyoub
+          - ar.muhammadjibreel
+          - ar.ibrahimwalk
+          - ar.minshawi-murattal
+          - ar.minshawi-mujawwad
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup Git user
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Create folder for reciter
+        run: mkdir -p assets/audio/quran/${{ matrix.reciter }}
+
+      - name: Generate URL list
+        run: |
+          for i in $(seq 1 6236); do
+            echo "https://cdn.islamic.network/quran/audio/128/${{ matrix.reciter }}/${i}.mp3"
+          done > urls_${{ matrix.reciter }}.txt
+
+      - name: Download files with aria2
+        uses: nick-invision/aria2-action@v1
+        with:
+          args: |
+            -x 16 -s 16 -j 16
+            -i urls_${{ matrix.reciter }}.txt
+            -d assets/audio/quran/${{ matrix.reciter }}
+            --file-allocation=none
+            --auto-file-renaming=false
+            --allow-overwrite=true
+
+      - name: Commit and push
+        run: |
+          git add assets/audio/quran/${{ matrix.reciter }}
+          git diff --cached --quiet && echo "No changes to commit" || (
+            git commit -m "Add per-ayah audio for ${{ matrix.reciter }}"
+            git push
+          )
