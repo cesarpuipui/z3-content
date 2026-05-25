@@ -1,13 +1,13 @@
 # .github/workflows/upload_quran_audio.yml
 #
-# Downloads Quran audio from everyayah.com for all reciters,
+# Downloads full-surah Quran audio from MP3Quran.net for all reciters,
 # zips each reciter folder, and uploads ZIPs to GitHub Releases.
 #
 # REPO: z3-content (public content repo)
 # Release structure:
 #   v1.0/
 #     audio/quran/abdul_basit.zip
-#     audio/quran/mishary_rashid.zip
+#     audio/quran/husary.zip
 #     ...
 #
 # Usage:
@@ -29,30 +29,27 @@ on:
         default: 'v1.0'
         type: string
 
-env:
-  BASE_URL: 'https://everyayah.com/data'
-
 jobs:
   upload-reciter-audio:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     strategy:
       matrix:
         reciter:
           - id: abdul_basit
-            folder: Abdul_Basit_Mujawwad_128kbps
+            server: https://server7.mp3quran.net/basit
           - id: husary
-            folder: Husary_64kbps
+            server: https://server13.mp3quran.net/husr
           - id: sudais
-            folder: Abdurrahmaan_As-Sudais_192kbps
+            server: https://server11.mp3quran.net/sds
           - id: shuraim
-            folder: Saood_ash-Shuraym_128kbps
+            server: https://server7.mp3quran.net/shur
           - id: minshawi
-            folder: Minshawy_Mujawwad_192kbps
+            server: https://server10.mp3quran.net/minsh
           - id: ghamdi
-            folder: Ghamadi_128kbps
+            server: https://server7.mp3quran.net/s_gmd
           - id: ajmi
-            folder: Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net
+            server: https://server10.mp3quran.net/ajm
       max-parallel: 2
       fail-fast: false
 
@@ -68,71 +65,87 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download reciter audio
+      - name: Create output directory
+        if: steps.should-run.outputs.skip != 'true'
+        run: mkdir -p audio/quran/${{ matrix.reciter.id }}
+
+      - name: Download all 114 surahs from MP3Quran.net
         if: steps.should-run.outputs.skip != 'true'
         run: |
-          FOLDER="${{ matrix.reciter.folder }}"
-          ID="${{ matrix.reciter.id }}"
-          DOWNLOAD_DIR="audio/quran/$ID"
-          mkdir -p "$DOWNLOAD_DIR"
+          SERVER="${{ matrix.reciter.server }}"
+          RECITER_ID="${{ matrix.reciter.id }}"
+          MISSING=0
 
-          echo "📥 Downloading $ID ($FOLDER)..."
-          FAILED=0
+          echo "🎤 Downloading from: $SERVER"
+          echo "📂 Saving to: audio/quran/$RECITER_ID/"
 
-          for SURAH in $(seq -w 1 114); do
-            FILENAME="${SURAH}.mp3"
-            URL="$BASE_URL/$FOLDER/$FILENAME"
-            DEST="$DOWNLOAD_DIR/$FILENAME"
+          for surah in $(seq -w 1 114); do
+            FILENAME="${surah}.mp3"
+            URL="${SERVER}/${FILENAME}"
+            OUTPUT="audio/quran/${RECITER_ID}/${FILENAME}"
 
-            for ATTEMPT in 1 2 3; do
-              if curl -fsSL --retry 2 --retry-delay 2 -o "$DEST" "$URL" 2>/dev/null; then
-                SIZE=$(stat -c%s "$DEST" 2>/dev/null || echo 0)
-                if [ "$SIZE" -gt 1000 ]; then
-                  echo "  ✅ Surah $SURAH ($SIZE bytes)"
+            # Skip if already exists
+            if [ -f "$OUTPUT" ] && [ -s "$OUTPUT" ]; then
+              echo "⏭️  $FILENAME already exists, skipping"
+              continue
+            fi
+
+            # Download with retry
+            SUCCESS=false
+            for attempt in 1 2 3; do
+              echo "📥 Downloading surah $surah (attempt $attempt)..."
+              HTTP_CODE=$(curl -s -L -w "%{http_code}" -o "$OUTPUT" \
+                -H "User-Agent: Mozilla/5.0 (Linux; Android 10)" \
+                --connect-timeout 30 \
+                --max-time 120 \
+                "$URL" 2>/dev/null)
+
+              if [ "$HTTP_CODE" = "200" ] && [ -s "$OUTPUT" ]; then
+                # Validate minimum size (1KB - catches error pages)
+                FILE_SIZE=$(stat -c%s "$OUTPUT" 2>/dev/null)
+                if [ "$FILE_SIZE" -gt 1000 ]; then
+                  echo "✅ Surah $surah: $FILE_SIZE bytes"
+                  SUCCESS=true
                   break
                 else
-                  rm -f "$DEST"
-                  echo "  ⚠️ Surah $SURAH too small (${SIZE}B), retry $ATTEMPT"
+                  echo "⚠️  Surah $surah: file too small ($FILE_SIZE bytes), retrying..."
+                  rm -f "$OUTPUT"
                 fi
               else
-                echo "  ⚠️ Surah $SURAH failed, retry $ATTEMPT"
+                echo "⚠️  Surah $surah: HTTP $HTTP_CODE, retrying..."
+                rm -f "$OUTPUT"
               fi
 
-              if [ "$ATTEMPT" = "3" ]; then
-                echo "  ❌ Surah $SURAH failed after 3 attempts"
-                FAILED=$((FAILED + 1))
-              else
-                sleep $((ATTEMPT * 2))
-              fi
+              # Exponential backoff
+              WAIT=$((attempt * 5))
+              echo "⏳ Waiting ${WAIT}s before retry..."
+              sleep $WAIT
             done
+
+            if [ "$SUCCESS" = "false" ]; then
+              echo "❌ FAILED to download surah $surah after 3 attempts"
+              MISSING=$((MISSING + 1))
+            fi
           done
 
-          DOWNLOADED=$(ls -1 "$DOWNLOAD_DIR"/*.mp3 2>/dev/null | wc -l)
-          echo "📊 $ID: $DOWNLOADED/114 downloaded, $FAILED failed"
+          # Validate all 114 surahs present
+          DOWNLOADED=$(ls -1 audio/quran/${RECITER_ID}/*.mp3 2>/dev/null | wc -l)
+          echo "📊 Downloaded: $DOWNLOADED / 114 (missing: $MISSING)"
 
-          if [ "$DOWNLOADED" -eq 0 ]; then
-            echo "❌ No files downloaded — aborting"
+          if [ "$DOWNLOADED" -lt 114 ]; then
+            echo "❌ MISSING $((114 - DOWNLOADED)) surahs — failing job"
             exit 1
           fi
 
-      - name: Create ZIP
+      - name: Create ZIP archive
         if: steps.should-run.outputs.skip != 'true'
         run: |
-          ID="${{ matrix.reciter.id }}"
-          DOWNLOAD_DIR="audio/quran/$ID"
-          ZIP_NAME="audio/quran/${ID}.zip"
-
-          echo "📦 Zipping $ID..."
-          cd "$DOWNLOAD_DIR"
-          zip -r "../../${ZIP_NAME}" *.mp3
+          cd audio/quran
+          zip -r "${{ matrix.reciter.id }}.zip" "${{ matrix.reciter.id }}/"
+          ls -lh "${{ matrix.reciter.id }}.zip"
           cd ../..
 
-          ZIP_SIZE=$(stat -c%s "$ZIP_NAME")
-          ZIP_MB=$((ZIP_SIZE / 1024 / 1024))
-          echo "📦 ${ZIP_NAME}: ${ZIP_MB} MB"
-          echo "zip_name=${ZIP_NAME}" >> "$GITHUB_ENV"
-
-      - name: Upload ZIP artifact
+      - name: Upload artifact
         if: steps.should-run.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -140,70 +153,38 @@ jobs:
           path: audio/quran/${{ matrix.reciter.id }}.zip
           retention-days: 1
 
-  create-release:
+  release:
     needs: upload-reciter-audio
     runs-on: ubuntu-latest
-    if: always()
-    permissions:
-      contents: write
-
+    if: always() && !cancelled()
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts/
+          path: audio/quran
           pattern: quran-audio-*
-          merge-multiple: false
+          merge-multiple: true
 
-      - name: Prepare release assets
+      - name: Flatten artifact structure
         run: |
-          mkdir -p release-assets/audio/quran
-          for dir in artifacts/quran-audio-*/; do
-            if [ -d "$dir" ]; then
-              cp "$dir"/*.zip release-assets/audio/quran/ 2>/dev/null || true
-            fi
-          done
-          ls -lh release-assets/audio/quran/
-          echo "📦 $(ls release-assets/audio/quran/*.zip 2>/dev/null | wc -l) ZIPs ready"
+          # Artifacts download as audio/quran/quran-audio-XXX/file.zip
+          # Move all ZIPs to audio/quran/
+          find audio/quran -name "*.zip" -exec mv {} audio/quran/ \;
+          # Remove empty artifact directories
+          find audio/quran -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
+          ls -lh audio/quran/
 
-      - name: Get or create release
-        id: release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ github.event.inputs.tag || 'v1.0' }}
-          name: "Quran Audio — ${{ github.event.inputs.tag || 'v1.0' }}"
-          body: |
-            ## Quran Reciter Audio
-
-            Per-surah MP3 ZIP archives for each reciter.
-
-            ### Contents
-            - `audio/quran/{reciter_id}.zip` — 114 full-surah MP3s per reciter
-
-            ### Reciters
-            | ID | Reciter |
-            |---|---|
-            | abdul_basit | Abdul Basit |
-            | mishary_rashid | Mishary Alafasy |
-            | husary | Mahmoud Al-Husary |
-            | sudais | Abdul Rahman Al-Sudais |
-            | shuraim | Saud Al-Shuraim |
-            | minshawi | El-Minshawi |
-            | ghamdi | Saad Al-Ghamdi |
-            | ajmi | Ahmed Al-Ajmi |
-          allowUpdates: true
-          replacesArtifacts: true
-
-      - name: Upload to release
+      - name: Upload to GitHub Release
         env:
-          GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.inputs.tag || 'v1.0' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for zip in release-assets/audio/quran/*.zip; do
-            if [ -f "$zip" ]; then
-              echo "⬆️ Uploading $(basename $zip)..."
-              gh release upload "$TAG" "$zip" --repo "${{ github.repository }}" --clobber
-            fi
-          done
-          echo "✅ All ZIPs uploaded to release $TAG"
-          gh release view "$TAG" --repo "${{ github.repository }}"
+          # Create or update release
+          gh release create "$TAG" \
+            --title "Quran Audio v1.0" \
+            --notes "Full-surah Quran audio from MP3Quran.net" \
+            --latest=false \
+            audio/quran/*.zip 2>/dev/null || \
+          gh release upload "$TAG" \
+            audio/quran/*.zip \
+            --clobber
