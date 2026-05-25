@@ -1,14 +1,14 @@
 # .github/workflows/upload_quran_audio.yml
 #
-# Downloads full-surah Quran audio from MP3Quran.net for all reciters,
+# Downloads full-surah Quran audio from MP3Quran.net for ALL reciters,
 # zips each reciter folder, and uploads ZIPs to GitHub Releases.
 #
 # REPO: z3-content (public content repo)
 # Release structure:
 #   v1.0/
-#     audio/quran/abdul_basit.zip
-#     audio/quran/husary.zip
-#     ...
+#     audio/quran/{folder}.zip
+#
+# Credit: MP3Quran.net — https://www.mp3quran.net
 #
 # Usage:
 #   Actions tab → "Upload Quran Audio to Releases" → "Run workflow"
@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       reciter:
-        description: 'Reciter ID to upload (leave empty for all)'
+        description: 'Reciter folder to upload (leave empty for all)'
         required: false
         default: ''
         type: string
@@ -36,20 +36,348 @@ jobs:
     strategy:
       matrix:
         reciter:
-          - id: abdul_basit
-            server: https://server7.mp3quran.net/basit
-          - id: husary
-            server: https://server13.mp3quran.net/husr
-          - id: sudais
-            server: https://server11.mp3quran.net/sds
-          - id: shuraim
-            server: https://server7.mp3quran.net/shur
-          - id: minshawi
-            server: https://server10.mp3quran.net/minsh
-          - id: ghamdi
-            server: https://server7.mp3quran.net/s_gmd
-          - id: ajmi
-            server: https://server10.mp3quran.net/ajm
+          - id: akdr
+            server: https://server6.mp3quran.net/akdr/
+          - id: 3siri
+            server: https://server6.mp3quran.net/3siri/
+          - id: shatri
+            server: https://server11.mp3quran.net/shatri/
+          - id: ajm
+            server: https://server10.mp3quran.net/ajm/
+          - id: hawashi
+            server: https://server11.mp3quran.net/hawashi/
+          - id: saber
+            server: https://server8.mp3quran.net/saber/
+          - id: ahmad_nu
+            server: https://server11.mp3quran.net/ahmad_nu/
+          - id: akrm
+            server: https://server9.mp3quran.net/akrm/
+          - id: abkr
+            server: https://server6.mp3quran.net/abkr/
+          - id: alzain
+            server: https://server9.mp3quran.net/alzain/
+          - id: qari
+            server: https://server11.mp3quran.net/qari/
+          - id: koshi
+            server: https://server11.mp3quran.net/koshi/
+          - id: twfeeq
+            server: https://server6.mp3quran.net/twfeeq/
+          - id: jamal
+            server: https://server6.mp3quran.net/jamal/
+          - id: jleel
+            server: https://server10.mp3quran.net/jleel/
+          - id: qht
+            server: https://server10.mp3quran.net/qht/
+          - id: kafi
+            server: https://server11.mp3quran.net/kafi/
+          - id: tnjy
+            server: https://server12.mp3quran.net/tnjy/
+          - id: hamza
+            server: https://server9.mp3quran.net/hamza/
+          - id: bl3
+            server: https://server6.mp3quran.net/bl3/Rewayat-Warsh-A-n-Nafi/
+          - id: s_gmd
+            server: https://server7.mp3quran.net/s_gmd/
+          - id: shur
+            server: https://server7.mp3quran.net/shur/
+          - id: shl
+            server: https://server6.mp3quran.net/shl/
+          - id: zaki
+            server: https://server9.mp3quran.net/zaki/
+          - id: sayed
+            server: https://server12.mp3quran.net/sayed/
+          - id: taher
+            server: https://server12.mp3quran.net/taher/
+          - id: hkm
+            server: https://server12.mp3quran.net/hkm/
+          - id: sahood
+            server: https://server8.mp3quran.net/sahood/
+          - id: habdan
+            server: https://server6.mp3quran.net/habdan/
+          - id: s_bud
+            server: https://server6.mp3quran.net/s_bud/
+          - id: salah_hashim_m
+            server: https://server12.mp3quran.net/salah_hashim_m/
+          - id: bu_khtr
+            server: https://server8.mp3quran.net/bu_khtr/
+          - id: mukhtar_haj
+            server: https://server16.mp3quran.net/mukhtar_haj/Rewayat-Hafs-A-n-Assem/
+          - id: ryan
+            server: https://server8.mp3quran.net/ryan/
+          - id: thubti
+            server: https://server6.mp3quran.net/thubti/
+          - id: bari
+            server: https://server12.mp3quran.net/bari/
+          - id: basit
+            server: https://server7.mp3quran.net/basit/Rewayat-Warsh-A-n-Nafi/
+          - id: sds
+            server: https://server11.mp3quran.net/sds/
+          - id: a_ahmed
+            server: https://server11.mp3quran.net/a_ahmed/
+          - id: zahrani
+            server: https://server9.mp3quran.net/zahrani/
+          - id: buajan
+            server: https://server8.mp3quran.net/buajan/
+          - id: mtrod
+            server: https://server8.mp3quran.net/mtrod/
+          - id: bsfr
+            server: https://server6.mp3quran.net/bsfr/
+          - id: kyat
+            server: https://server12.mp3quran.net/kyat/
+          - id: jhn
+            server: https://server13.mp3quran.net/jhn/
+          - id: gulan
+            server: https://server8.mp3quran.net/gulan/
+          - id: soufi
+            server: https://server16.mp3quran.net/soufi/Rewayat-Hafs-A-n-Assem/
+          - id: mohsin_harthi
+            server: https://server6.mp3quran.net/mohsin_harthi/
+          - id: qasm
+            server: https://server8.mp3quran.net/qasm/
+          - id: obk
+            server: https://server12.mp3quran.net/obk/
+          - id: kanakeri
+            server: https://server6.mp3quran.net/kanakeri/
+          - id: wdod
+            server: https://server8.mp3quran.net/wdod/
+          - id: arkani
+            server: https://server6.mp3quran.net/arkani/
+          - id: hthfi
+            server: https://server9.mp3quran.net/hthfi/
+          - id: huthifi_qalon
+            server: https://server9.mp3quran.net/huthifi_qalon/
+          - id: a_jbr
+            server: https://server11.mp3quran.net/a_jbr/
+          - id: hajjaj
+            server: https://server9.mp3quran.net/hajjaj/
+          - id: hafz
+            server: https://server6.mp3quran.net/hafz/
+          - id: a_turki
+            server: https://server16.mp3quran.net/a_turki/Rewayat-Hafs-A-n-Assem/
+          - id: omar_warsh
+            server: https://server9.mp3quran.net/omar_warsh/
+          - id: frs_a
+            server: https://server8.mp3quran.net/frs_a/
+          - id: qtm
+            server: https://server6.mp3quran.net/qtm/
+          - id: nabil
+            server: https://server9.mp3quran.net/nabil/
+          - id: namh
+            server: https://server8.mp3quran.net/namh/
+          - id: hani
+            server: https://server8.mp3quran.net/hani/
+          - id: waleed
+            server: https://server9.mp3quran.net/waleed/
+          - id: yasser
+            server: https://server11.mp3quran.net/yasser/
+          - id: qurashi
+            server: https://server9.mp3quran.net/qurashi/
+          - id: mzroyee
+            server: https://server9.mp3quran.net/mzroyee/
+          - id: yahya
+            server: https://server12.mp3quran.net/yahya/
+          - id: yousef
+            server: https://server9.mp3quran.net/yousef/
+          - id: a_abdl
+            server: https://server16.mp3quran.net/a_abdl/Rewayat-Hafs-A-n-Assem/
+          - id: maher
+            server: https://server12.mp3quran.net/maher/
+          - id: tblawi
+            server: https://server12.mp3quran.net/tblawi/
+          - id: lhdan
+            server: https://server8.mp3quran.net/lhdan/
+          - id: mhsny
+            server: https://server11.mp3quran.net/mhsny/
+          - id: ayyoub2
+            server: https://server16.mp3quran.net/ayyoub2/Rewayat-Hafs-A-n-Assem/
+          - id: ayyub
+            server: https://server8.mp3quran.net/ayyub/
+          - id: shah
+            server: https://server12.mp3quran.net/shah/
+          - id: jbrl
+            server: https://server8.mp3quran.net/jbrl/
+          - id: minsh
+            server: https://server10.mp3quran.net/minsh/Almusshaf-Al-Mo-lim/
+          - id: m_krm
+            server: https://server12.mp3quran.net/m_krm/
+          - id: abdullah
+            server: https://server9.mp3quran.net/abdullah/
+          - id: husr
+            server: https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi/
+          - id: bna
+            server: https://server8.mp3quran.net/bna/
+          - id: afs
+            server: https://server8.mp3quran.net/afs/
+          - id: mustafa
+            server: https://server8.mp3quran.net/mustafa/Almusshaf-Al-Mojawwad/
+          - id: lahoni
+            server: https://server6.mp3quran.net/lahoni/
+          - id: ra3ad
+            server: https://server8.mp3quran.net/ra3ad/
+          - id: muftah_sultany
+            server: https://server14.mp3quran.net/muftah_sultany/Rewayat-Hafs-A-n-Assem/
+          - id: m_sayed
+            server: https://server16.mp3quran.net/m_sayed/Rewayat-Warsh-A-n-Nafi/
+          - id: a_binaoun
+            server: https://server16.mp3quran.net/a_binaoun/Rewayat-Hafs-A-n-Assem/
+          - id: nourin_siddig
+            server: https://server16.mp3quran.net/nourin_siddig/Rewayat-Aldori-A-n-Abi-Amr/
+          - id: zaml
+            server: https://server9.mp3quran.net/zaml/
+          - id: shaksh
+            server: https://server10.mp3quran.net/shaksh/
+          - id: sheimy
+            server: https://server10.mp3quran.net/sheimy/
+          - id: salamah
+            server: https://server12.mp3quran.net/salamah/Rewayat-Hafs-A-n-Assem/
+          - id: mohna
+            server: https://server11.mp3quran.net/mohna/
+          - id: a_klb
+            server: https://server8.mp3quran.net/a_klb/
+          - id: bilal
+            server: https://server11.mp3quran.net/bilal/
+          - id: hatem
+            server: https://server11.mp3quran.net/hatem/
+          - id: jormy
+            server: https://server11.mp3quran.net/jormy/
+          - id: mrifai
+            server: https://server11.mp3quran.net/mrifai/
+          - id: ibrahim_dosri
+            server: https://server10.mp3quran.net/ibrahim_dosri/Rewayat-Hafs-A-n-Assem/
+          - id: jaman
+            server: https://server6.mp3quran.net/jaman/
+          - id: noah
+            server: https://server8.mp3quran.net/noah/
+          - id: harthi
+            server: https://server8.mp3quran.net/harthi/
+          - id: rashad
+            server: https://server10.mp3quran.net/rashad/
+          - id: trabulsi
+            server: https://server10.mp3quran.net/trabulsi/
+          - id: trablsi
+            server: https://server10.mp3quran.net/trablsi/
+          - id: Abdullahk
+            server: https://server10.mp3quran.net/Abdullahk/
+          - id: Aamer
+            server: https://server10.mp3quran.net/Aamer/
+          - id: khan
+            server: https://server6.mp3quran.net/khan/
+          - id: dokali
+            server: https://server7.mp3quran.net/dokali/
+          - id: fateh
+            server: https://server6.mp3quran.net/fateh/
+          - id: tareq
+            server: https://server10.mp3quran.net/tareq/
+          - id: balilah
+            server: https://server6.mp3quran.net/balilah/
+          - id: wdee3
+            server: https://server6.mp3quran.net/wdee3/
+          - id: kurdi
+            server: https://server6.mp3quran.net/kurdi/
+          - id: aloosi
+            server: https://server6.mp3quran.net/aloosi/
+          - id: m_qari
+            server: https://server8.mp3quran.net/m_qari/
+          - id: rami
+            server: https://server6.mp3quran.net/rami/
+          - id: a_majed
+            server: https://server10.mp3quran.net/a_majed/
+          - id: m_akri
+            server: https://server16.mp3quran.net/m_akri/Rewayat-Qalon-A-n-Nafi/
+          - id: mousa
+            server: https://server14.mp3quran.net/mousa/Rewayat-Hafs-A-n-Assem/
+          - id: khalf
+            server: https://server14.mp3quran.net/khalf/
+          - id: mansor
+            server: https://server14.mp3quran.net/mansor/
+          - id: alosfor
+            server: https://server14.mp3quran.net/alosfor/
+          - id: bukheet
+            server: https://server14.mp3quran.net/bukheet/
+          - id: nasser_almajed
+            server: https://server14.mp3quran.net/nasser_almajed/
+          - id: swlim
+            server: https://server14.mp3quran.net/swlim/Rewayat-Hafs-A-n-Assem/
+          - id: bader
+            server: https://server10.mp3quran.net/bader/Rewayat-Hafs-A-n-Assem/
+          - id: shaheen
+            server: https://server16.mp3quran.net/shaheen/Rewayat-Hafs-A-n-Assem/
+          - id: saad
+            server: https://server16.mp3quran.net/saad/Rewayat-Hafs-A-n-Assem/
+          - id: nufais
+            server: https://server16.mp3quran.net/nufais/Rewayat-Hafs-A-n-Assem/
+          - id: deban
+            server: https://server16.mp3quran.net/deban/Rewayat-Hafs-A-n-Assem/
+          - id: kamel
+            server: https://server16.mp3quran.net/kamel/Rewayat-Hafs-A-n-Assem/
+          - id: peshawa
+            server: https://server16.mp3quran.net/peshawa/Rewayat-Hafs-A-n-Assem/
+          - id: nathier
+            server: https://server16.mp3quran.net//nathier/Rewayat-Hafs-A-n-Assem/
+          - id: okasha
+            server: https://server16.mp3quran.net/okasha/Rewayat-Albizi-A-n-Ibn-Katheer/
+          - id: h_dukhain
+            server: https://server16.mp3quran.net/h_dukhain/Rewayat-Hafs-A-n-Assem/
+          - id: sneineh
+            server: https://server16.mp3quran.net/sneineh/Rewayat-Qalon-A-n-Nafi/
+          - id: qeniwa
+            server: https://server16.mp3quran.net/qeniwa/Rewayat-Qalon-A-n-Nafi/
+          - id: m_abdelhakam
+            server: https://server16.mp3quran.net/m_abdelhakam/Rewayat-Hafs-A-n-Assem/
+          - id: a_maasaraawi
+            server: https://server16.mp3quran.net/a_maasaraawi/Rewayat-Hafs-A-n-Assem/
+          - id: i_kshidan
+            server: https://server16.mp3quran.net/i_kshidan/Rewayat-Qalon-A-n-Nafi/
+          - id: h_abudalal
+            server: https://server16.mp3quran.net/h_abudalal/Rewayat-Hafs-A-n-Assem/
+          - id: f_khamery
+            server: https://server16.mp3quran.net/f_khamery/Rewayat-Hafs-A-n-Assem/
+          - id: s_hashemi
+            server: https://server16.mp3quran.net/s_hashemi/Rewayat-Hafs-A-n-Assem/
+          - id: kh_mohammadi
+            server: https://server16.mp3quran.net/kh_mohammadi/Rewayat-Hafs-A-n-Assem/
+          - id: mal-allah_jaber
+            server: https://server16.mp3quran.net/mal-allah_jaber/Rewayat-Hafs-A-n-Assem/
+          - id: s_sadeiq
+            server: https://server16.mp3quran.net/s_sadeiq/Rewayat-Hafs-A-n-Assem/
+          - id: h_saleh
+            server: https://server16.mp3quran.net/h_saleh/Rewayat-Hafs-A-n-Assem/
+          - id: a_alshahhat
+            server: https://server16.mp3quran.net/a_alshahhat/Rewayat-Hafs-A-n-Assem/
+          - id: i_sanankoua
+            server: https://server16.mp3quran.net/i_sanankoua/Rewayat-Hafs-A-n-Assem/
+          - id: s_alquraishi
+            server: https://server16.mp3quran.net/s_alquraishi/Rewayat-Hafs-A-n-Assem/
+          - id: shamrani
+            server: https://server16.mp3quran.net/shamrani/Rewayat-Hafs-A-n-Assem/
+          - id: f_hajry
+            server: https://server16.mp3quran.net/f_hajry/Rewayat-Hafs-A-n-Assem/
+          - id: a_alemadi
+            server: https://server16.mp3quran.net/a_alemadi/Rewayat-Hafs-A-n-Assem/
+          - id: a_alhazmi
+            server: https://server16.mp3quran.net/a_alhazmi/Rewayat-Hafs-A-n-Assem/
+          - id: a_alqrafi
+            server: https://server16.mp3quran.net/a_alqrafi/Rewayat-Hafs-A-n-Assem/
+          - id: A-Ghailan
+            server: https://server16.mp3quran.net/A-Ghailan/Rewayat-Hafs-A-n-Assem/
+          - id: M_Burhaji
+            server: https://server16.mp3quran.net/M_Burhaji/Rewayat-Hafs-A-n-Assem/
+          - id: H-Aldaghriri
+            server: https://server16.mp3quran.net/H-Aldaghriri/Rewayat-Hafs-A-n-Assem/
+          - id: M_Alfaqih
+            server: https://server16.mp3quran.net/M_Alfaqih/Rewayat-Hafs-A-n-Assem/
+          - id: J-Abdullah
+            server: https://server16.mp3quran.net/J-Abdullah/Rewayat-Hafs-A-n-Assem/
+          - id: K-Alzadi
+            server: https://server16.mp3quran.net/K-Alzadi/Rewayat-Hafs-A-n-Assem/
+          - id: A-AlBadr
+            server: https://server16.mp3quran.net/A-AlBadr/Rewayat-Hafs-A-n-Assem/
+          - id: Alijon
+            server: https://server16.mp3quran.net/Alijon/Rewayat-Hafs-A-n-Assem/
+          - id: M-AlZubaidi
+            server: https://server16.mp3quran.net/M-AlZubaidi/Rewayat-Hafs-A-n-Assem/
+          - id: A-Benkirane
+            server: https://server16.mp3quran.net/A-Benkirane/Rewayat-Warsh-A-n-Nafi/
       max-parallel: 2
       fail-fast: false
 
@@ -101,7 +429,6 @@ jobs:
                 "$URL" 2>/dev/null)
 
               if [ "$HTTP_CODE" = "200" ] && [ -s "$OUTPUT" ]; then
-                # Validate minimum size (1KB - catches error pages)
                 FILE_SIZE=$(stat -c%s "$OUTPUT" 2>/dev/null)
                 if [ "$FILE_SIZE" -gt 1000 ]; then
                   echo "✅ Surah $surah: $FILE_SIZE bytes"
@@ -116,7 +443,6 @@ jobs:
                 rm -f "$OUTPUT"
               fi
 
-              # Exponential backoff
               WAIT=$((attempt * 5))
               echo "⏳ Waiting ${WAIT}s before retry..."
               sleep $WAIT
@@ -128,7 +454,6 @@ jobs:
             fi
           done
 
-          # Validate all 114 surahs present
           DOWNLOADED=$(ls -1 audio/quran/${RECITER_ID}/*.mp3 2>/dev/null | wc -l)
           echo "📊 Downloaded: $DOWNLOADED / 114 (missing: $MISSING)"
 
@@ -167,10 +492,7 @@ jobs:
 
       - name: Flatten artifact structure
         run: |
-          # Artifacts download as audio/quran/quran-audio-XXX/file.zip
-          # Move all ZIPs to audio/quran/
           find audio/quran -name "*.zip" -exec mv {} audio/quran/ \;
-          # Remove empty artifact directories
           find audio/quran -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
           ls -lh audio/quran/
 
@@ -179,10 +501,9 @@ jobs:
           TAG: ${{ github.event.inputs.tag || 'v1.0' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create or update release
           gh release create "$TAG" \
             --title "Quran Audio v1.0" \
-            --notes "Full-surah Quran audio from MP3Quran.net" \
+            --notes "Full-surah Quran audio from MP3Quran.net. Credit: https://www.mp3quran.net" \
             --latest=false \
             audio/quran/*.zip 2>/dev/null || \
           gh release upload "$TAG" \
