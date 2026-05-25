@@ -41,8 +41,6 @@ jobs:
         reciter:
           - id: abdul_basit
             folder: Abdul_Basit_Mujawwad_128kbps
-          - id: mishary_rashid
-            folder: Alafasy_128kbps
           - id: husary
             folder: Husary_64kbps
           - id: sudais
