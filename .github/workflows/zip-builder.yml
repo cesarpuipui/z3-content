@@ -17,6 +17,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Create release tag if missing
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
