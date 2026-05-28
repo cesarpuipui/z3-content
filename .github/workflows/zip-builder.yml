@@ -115,7 +115,7 @@ jobs:
           - id: basit
             server: https://server7.mp3quran.net/basit/Rewayat-Warsh-A-n-Nafi/
           - id: basit_mjwd
-            server: https://server7.mp3quran.net/basit_mjwd/
+            server: https://server7.mp3quran.net/basit/Almusshaf-Al-Mojawwad/
           - id: sds
             server: https://server11.mp3quran.net/sds/
           - id: a_ahmed
